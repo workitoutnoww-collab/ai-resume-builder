@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Resume Builder | Free Tool</title>
+  <meta name="description" content="Generate powerful AI resume bullet points instantly. Free for students in India.">
+
+  <!-- KEEP YOUR GOOGLE ANALYTICS HERE -->
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+</head>
+
+<body class="bg-gradient-to-br from-indigo-100 via-white to-blue-100 min-h-screen flex items-center justify-center">
+
+<div class="w-full max-w-3xl p-6">
+
+  <!-- CARD -->
+
+  <div class="bg-white/80 backdrop-blur-lg shadow-xl rounded-3xl p-6">
+
+```
+<h1 class="text-3xl md:text-4xl font-bold text-center mb-2">
+  AI Resume Builder 🚀
+</h1>
+
+<p class="text-center text-gray-600 mb-6">
+  Free AI tool for students • No login required
+</p>
+
+<!-- INPUT -->
+<textarea id="input"
+  class="w-full p-4 border rounded-xl mb-3 focus:ring-2 focus:ring-indigo-400 outline-none"
+  rows="4"
+  placeholder="Example: Built a calculator app using JavaScript"></textarea>
+
+<!-- ROLE -->
+<select id="role"
+  class="w-full p-3 border rounded-xl mb-4">
+  <option value="">General</option>
+  <option value="software engineer">Software Engineer</option>
+  <option value="data analyst">Data Analyst</option>
+  <option value="student">Student</option>
+</select>
+
+<!-- BUTTON -->
+<button onclick="generateResume()"
+  class="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition">
+  Generate Resume Points
+</button>
+
+<!-- OUTPUT -->
+<div id="output"
+  class="mt-6 p-4 bg-gray-50 border rounded-xl min-h-[100px] whitespace-pre-wrap text-gray-800">
+</div>
+
+<!-- ACTIONS -->
+<div class="grid grid-cols-2 gap-3 mt-4">
+  <button onclick="copyText()"
+    class="bg-gray-800 text-white py-2 rounded-xl hover:bg-gray-900">
+    Copy
+  </button>
+
+  <button onclick="downloadPDF()"
+    class="bg-green-600 text-white py-2 rounded-xl hover:bg-green-700">
+    Download PDF
+  </button>
+</div>
+```
+
+  </div>
+</div>
+
+<script>
+let isLoading = false;
+const cache = {};
+
+// FREE templates (cost saving)
+const templates = {
+  "built a calculator app": "• Developed a calculator application using JavaScript, improving problem-solving and UI design skills.",
+  "worked on a website": "• Developed and deployed a responsive website, enhancing user experience and performance."
+};
+
+async function generateResume() {
+  if (isLoading) return;
+
+  let input = document.getElementById("input").value.trim().toLowerCase();
+  let role = document.getElementById("role").value;
+  let outputBox = document.getElementById("output");
+
+  if (!input) {
+    outputBox.innerText = "Enter your experience.";
+    return;
+  }
+
+  if (input.length > 200) {
+    outputBox.innerText = "Keep input short.";
+    return;
+  }
+
+  // template (FREE)
+  if (templates[input]) {
+    outputBox.innerText = templates[input];
+    return;
+  }
+
+  // cache (FREE)
+  if (cache[input]) {
+    outputBox.innerText = cache[input];
+    return;
+  }
+
+  isLoading = true;
+  outputBox.innerHTML = "Generating <span class='animate-pulse'>...</span>";
+
+  try {
+    const res = await fetch("/.netlify/functions/resume", {
+      method: "POST",
+      body: JSON.stringify({
+        input: `Role: ${role}. ${input}`
+      })
+    });
+
+    const data = await res.json();
+
+    if (data.output) {
+      cache[input] = data.output;
+      outputBox.innerHTML = data.output.replace(/\\n/g, "<br><br>");
+    } else {
+      outputBox.innerText = "Error generating result.";
+    }
+
+  } catch {
+    outputBox.innerText = "Connection error.";
+  }
+
+  isLoading = false;
+}
+
+// COPY
+function copyText() {
+  navigator.clipboard.writeText(document.getElementById("output").innerText);
+  alert("Copied!");
+}
+
+// PDF
+function downloadPDF() {
+  const { jsPDF } = window.jspdf;
+  const doc = new jsPDF();
+  let text = document.getElementById("output").innerText;
+  doc.text(text, 10, 10);
+  doc.save("resume.pdf");
+}
+</script>
+
+<scri
