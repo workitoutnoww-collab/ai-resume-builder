@@ -1,7 +1,13 @@
 exports.handler = async function(event) {
   try {
-    const body = JSON.parse(event.body || "{}");
-    const input = body.input;
+    if (event.httpMethod !== "POST") {
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ error: "Use POST request" })
+      };
+    }
+
+    const { input } = JSON.parse(event.body || "{}");
 
     if (!input) {
       return {
@@ -9,9 +15,6 @@ exports.handler = async function(event) {
         body: JSON.stringify({ error: "No input provided" })
       };
     }
-
-    const fetch = (...args) =>
-      import("node-fetch").then(({ default: fetch }) => fetch(...args));
 
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
@@ -24,14 +27,14 @@ exports.handler = async function(event) {
         messages: [
           {
             role: "system",
-            content: "Write 2 short resume bullet points using action verbs."
+            content: "Write 2 powerful resume bullet points using action verbs and measurable impact."
           },
           {
             role: "user",
             content: input
           }
         ],
-        max_tokens: 80
+        max_tokens: 100
       })
     });
 
@@ -40,7 +43,7 @@ exports.handler = async function(event) {
     return {
       statusCode: 200,
       body: JSON.stringify({
-        output: data.choices?.[0]?.message?.content || "No response"
+        output: data.choices?.[0]?.message?.content || "No response from AI"
       })
     };
 
