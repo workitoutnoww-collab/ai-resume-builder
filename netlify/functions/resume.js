@@ -16,10 +16,19 @@ exports.handler = async function(event) {
       };
     }
 
+    const apiKey = process.env.OPENAI_API_KEY;
+
+    if (!apiKey) {
+      return {
+        statusCode: 200,
+        body: JSON.stringify({ error: "API key missing" })
+      };
+    }
+
     const response = await fetch("https://api.openai.com/v1/chat/completions", {
       method: "POST",
       headers: {
-        "Authorization": `Bearer ${process.env.OPENAI_API_KEY}`,
+        "Authorization": `Bearer ${apiKey}`,
         "Content-Type": "application/json"
       },
       body: JSON.stringify({
@@ -27,7 +36,7 @@ exports.handler = async function(event) {
         messages: [
           {
             role: "system",
-            content: "Write 2 powerful resume bullet points using action verbs and measurable impact."
+            content: "Write 2 strong resume bullet points with action verbs."
           },
           {
             role: "user",
@@ -40,10 +49,22 @@ exports.handler = async function(event) {
 
     const data = await response.json();
 
+    // DEBUG LOG
+    console.log("OpenAI response:", data);
+
+    if (!data.choices) {
+      return {
+        statusCode: 200,
+        body: JSON.stringify({
+          error: "OpenAI error: " + JSON.stringify(data)
+        })
+      };
+    }
+
     return {
       statusCode: 200,
       body: JSON.stringify({
-        output: data.choices?.[0]?.message?.content || "No response from AI"
+        output: data.choices[0].message.content
       })
     };
 
