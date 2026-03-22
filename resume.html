@@ -1,14 +1,80 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>AI Resume Builder</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- KEEP YOUR GOOGLE ANALYTICS HERE -->
+
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <style>
+    body {
+      background: linear-gradient(135deg, #667eea, #764ba2);
+    }
+  </style>
+
+</head>
+
+<body class="min-h-screen flex items-center justify-center p-4 text-gray-800">
+
+<div class="w-full max-w-2xl">
+
+  <!-- CARD -->
+
+  <div class="bg-white/90 backdrop-blur-xl rounded-3xl shadow-2xl p-6">
+
+```
+<h1 class="text-3xl font-bold text-center mb-2">
+  AI Resume Builder 🚀
+</h1>
+
+<p class="text-center text-gray-500 mb-6">
+  Turn your experience into powerful resume points instantly
+</p>
+
+<!-- INPUT -->
+<textarea id="userInput"
+  class="w-full p-4 border rounded-xl mb-4 focus:ring-2 focus:ring-indigo-400 outline-none"
+  rows="4"
+  placeholder="Example: Built a student website using HTML, CSS, and JavaScript"></textarea>
+
+<!-- BUTTON -->
+<button onclick="generateResume()"
+  class="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 transition">
+  ✨ Improve Resume
+</button>
+
+<!-- OUTPUT -->
+<div id="output"
+  class="mt-6 p-4 bg-gray-50 border rounded-xl min-h-[100px] text-gray-800 leading-relaxed">
+</div>
+```
+
+  </div>
+
+  <!-- FOOTER -->
+
+  <p class="text-center text-white text-sm mt-4 opacity-80">
+    Free AI tool • No login required
+  </p>
+
+</div>
+
 <script>
 async function generateResume() {
-  const input = document.getElementById("userInput").value;
+  const input = document.getElementById("userInput").value.trim();
   const output = document.getElementById("output");
 
   if (!input) {
-    output.innerText = "Please enter something!";
+    output.innerHTML = "⚠️ Please enter your experience.";
     return;
   }
 
-  output.innerText = "Generating... ⏳";
+  // loading animation
+  output.innerHTML = "Generating <span class='animate-pulse'>...</span>";
 
   try {
     const res = await fetch("/.netlify/functions/resume", {
@@ -20,15 +86,28 @@ async function generateResume() {
     });
 
     const data = await res.json();
+    console.log(data);
 
     if (data.output) {
-      output.innerText = data.output;
+      // format bullets nicely
+      const formatted = data.output
+        .split("\n")
+        .map(line => `<div class="mb-2">• ${line.replace(/^[-•]\s*/, "")}</div>`)
+        .join("");
+
+      output.innerHTML = formatted;
+
+    } else if (data.error) {
+      output.innerHTML = "⚠️ " + data.error;
     } else {
-      output.innerText = "Error: " + data.error;
+      output.innerHTML = "No response received.";
     }
 
   } catch (err) {
-    output.innerText = "Failed to connect to AI";
+    output.innerHTML = "❌ Failed to connect to AI.";
   }
 }
 </script>
+
+</body>
+</html>
